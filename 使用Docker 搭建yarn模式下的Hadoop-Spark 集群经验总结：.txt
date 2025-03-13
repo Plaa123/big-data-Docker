@@ -1,0 +1,21 @@
+使用Docker 搭建yarn模式下的Hadoop-Spark 集群经验总结：
+
+首先说方法：
+
+方法一：
+
+- 下载或者直接拉取现有的成熟的镜像image，拉取镜像使用 `docker pull + image名字`,这种目前不可用，可以使用下载好的image，离线加载image。切换到存放image的目录下，使用`docker load - i 包名` 即可加载image。但是请注意使用包名必须跟下载的一致，否则它就会去下载，然后报错。不止是加载，后面所有image都要核对是否跟你下载的一致。
+- 加载好image，之后使用命令`docker images`查看所有image,确定你的image成功加载之后，创建一个工作目录 ，目录复制一份docker-compose.yaml 文件到工作目录下，在工作目录下使用命令 `docker-compose up -d `即可创建运行集群的container，container 的名字就是你创建的工作目录名字。创建之前注意看复制的yaml文件，镜像名是否一致，依赖的文件，脚本，以及目录是否存在。   
+
+
+
+方法二：
+
+- 是基于基本的镜像，ubuntu,alpine ,自行编写Dockerfile 然后创建出新的image。
+- 首先创建一个工作目录，在工作目录下创建`config` 文件夹，在config文件夹下放入修改好的集群配置文件如`core-site.xml`,`hadoop.env`,`hdfs-site.xml`,`mapred-site.xml`,`worker`,`yarn-site.xml`,然后编写Hadoop 启动脚本。
+- 编写Dockerfile文件，注意这个文件不带后缀，首字母是大写。写好Dockerfile 之后，使用命令`docker build -t 新镜像名字 .`,等待创建完毕，这个过程会很漫长，建议晚上睡觉之前进行。创建完毕之后在docker 的images中会出现，也可以使用`docker images`查看。
+- 最后就是编写docker-compose.yaml 文件，然后 `docker-compose up -d `就可以创建container集群了       
+
+结论：docker 创建集群确实是很快，但前提是有一个成熟的image 镜像方案，如果没有的话，还是建议传统虚拟机搭建，在搭建docker这个过程中，遇到的问题，丝毫不下虚拟机搭建。使用传统虚拟机方案搭建，试错成本低，遇到报错可以定位，哪里错了修改哪里，立马生效，但是docker 不行，docker 要修改的是image ，它就像一张照片，拍的不好需要重新摆姿势，重新拍照，在部署到容器中去。
+
+ 
